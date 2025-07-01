@@ -610,6 +610,57 @@ void RtsiIOInterface::setupRecipe() {
     output_recipe_ = setupOutputRecipe(output_recipe_string_, target_frequency_);
 }
 
+bool RtsiIOInterface::direct_connect(const std::string& ip) {
+    if (isConnected() || recv_thread_) {
+        disconnect();
+    }
+
+    RtsiClientInterface::connect(ip);
+
+    if(!negotiateProtocolVersion()) {
+        ELITE_LOG_FATAL("RTSI negitiate protocol version fail.");
+        return false;
+    }
+
+    controller_version_ = RtsiClientInterface::getControllerVersion();
+
+    // Setup input and output recipe. 
+    // Send start signal
+    try {
+        setupRecipe();
+        if (!start()) {
+            ELITE_LOG_FATAL("RTSI start signal send fail.");
+            return false;
+        }
+    } catch(const EliteException& e) {
+        if (e == EliteException::Code::RTSI_UNKNOW_VARIABLE_TYPE) {
+            ELITE_LOG_FATAL("RTSI setup recipe fail. Check recipe files.");
+            disconnect();
+            return false;
+        } else {
+            throw e;
+        }
+    }
+
+    return true;
+}
+
+void RtsiIOInterface::direct_send() {
+    if (!input_recipe_ || !isConnected()) {
+        return;
+    }
+
+    send(input_recipe_);
+}
+
+void RtsiIOInterface::direct_recv() {
+    if (!output_recipe_ || !isConnected()) {
+        return;
+    }
+
+    receiveData(output_recipe_, true);
+}
+
 void RtsiIOInterface::recvLoop() {
     // Calculate the ideal cycle time.
     double period_ms = (1 / target_frequency_) * 1000;

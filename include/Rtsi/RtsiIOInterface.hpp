@@ -464,6 +464,24 @@ class RtsiIOInterface : public RtsiClientInterface {
         return false;
     }
 
+    /**
+     * @brief Connect to RTSI without recv thread
+     * @note Used for manual RTSI flow control
+     */
+    ELITE_EXPORT bool direct_connect(const std::string& ip);
+
+    /**
+     * @brief Send recipe values directly
+     * @note Used for manual RTSI flow control
+     */
+    ELITE_EXPORT void direct_send();
+
+    /**
+     * @brief Recieve recent recipe data
+     * @note Used for manual RTSI flow control
+     */
+    ELITE_EXPORT void direct_recv();
+
    private:
     volatile bool input_new_cmd_;
     std::vector<std::string> input_recipe_string_;
