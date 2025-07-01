@@ -23,7 +23,7 @@ else()
 endif()
 
 # Find third-party library
-find_package(Boost REQUIRED)
+find_package(Boost)
 find_package(libssh)
 if(libssh_FOUND)
     set(THIRDPARTY_LIB ${THIRDPARTY_LIB} ssh)
